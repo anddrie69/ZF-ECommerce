@@ -31,8 +31,8 @@ class ECommerce_Cart implements ECommerce_ICart
     public function add($item, $count = 1)
     {
         if ($item instanceof ECommerce_Interface) {
-            if (!isset($this->_items[$item->getId()])) {
-               $this->_items[$item->getId()] = array(
+            if (!isset($this->_items[(int)$item->getId()])) {
+               $this->_items[(int)$item->getId()] = array(
                     'item' => $item,
                     'count' => $count,
                 );
@@ -43,11 +43,13 @@ class ECommerce_Cart implements ECommerce_ICart
     /**
      * Удаляет позицию из корзины
      *
-     * @param $item
+     * @param $itemId
      */
-    public function remove($item)
+    public function remove($itemId)
     {
-        // TODO: Implement remove() method.
+        if (isset($this->_items[$itemId])) {
+            unset ($this->_items[$itemId]);
+        }
     }
 
     /**
@@ -58,7 +60,14 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function update($item, $count)
     {
-        // TODO: Implement update() method.
+        if ($item instanceof ECommerce_Interface) {
+            if (isset($this->_items[(int)$item->getId()])) {
+                $this->_items[(int)$item->getId()] = array(
+                    'item' => $item,
+                    'count' => $count,
+                );
+            }
+        }
     }
 
     /**
@@ -135,11 +144,13 @@ class ECommerce_Cart implements ECommerce_ICart
     /**
      * Возвращает объект по ключу
      *
-     * @param $item
+     * @param $itemId
      */
-    public function getItem($item)
+    public function getItem($itemId)
     {
-        // TODO: Implement getItem() method.
+        if (isset($this->_items[$itemId])) {
+            return $this->_items[$itemId];
+        }
     }
 
     /**
@@ -149,6 +160,8 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getItems()
     {
-        return $this->_items;
+        if (!empty($this->_items)) {
+            return $this->_items;
+        }
     }
 }

@@ -19,9 +19,9 @@ interface ECommerce_ICart
      * Удаляет позицию из корзины
      *
      * @abstract
-     * @param $item
+     * @param $itemId
      */
-    public function remove($item);
+    public function remove($itemId);
 
     /**
      * Обновляет позицию в корзине
@@ -93,9 +93,9 @@ interface ECommerce_ICart
      * Возвращает объект по ключу
      *
      * @abstract
-     * @param $item
+     * @param $itemId
      */
-    public function getItem($item);
+    public function getItem($itemId);
 
     /**
      * Возвращает массив объектов из корзины
