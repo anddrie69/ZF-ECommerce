@@ -4,7 +4,7 @@
  * Date: 17.04.12
  * Time: 13:59
  */
-interface ICart
+interface ECommerce_ICart
 {
     /**
      * Добавляет позицию в корзину
@@ -104,11 +104,4 @@ interface ICart
      *
      */
     public function getItems();
-
-
-
-
-
-
-
 }
