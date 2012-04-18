@@ -6,9 +6,17 @@
  */
 class ECommerce_Cart implements ECommerce_ICart
 {
-    private $_items = array();
+    /**
+     * Массив всех объектов из корзины
+     *
+     * @var array
+     */
+    static private $_items = array();
 
-    static $_instance = null;
+    /**
+     * @var null
+     */
+    static private $_instance = null;
 
     private function __construct() {}
 
@@ -19,6 +27,7 @@ class ECommerce_Cart implements ECommerce_ICart
         if (null == self::$_instance) {
             self::$_instance = new ECommerce_Cart();
         }
+        self::_sessionRestore();
         return self::$_instance;
     }
 
@@ -31,14 +40,15 @@ class ECommerce_Cart implements ECommerce_ICart
     public function add($item, $count = 1)
     {
         if ($item instanceof ECommerce_Interface) {
-            if (!isset($this->_items[(int)$item->getId()])) {
-               $this->_items[(int)$item->getId()] = array(
+            if (!isset(self::$_items[(int)$item->getId()])) {
+               self::$_items[(int)$item->getId()] = array(
                     'item' => $item,
-                    'count' => $count,
+                    'count' => (int)$count,
                     'price' => $item->getPrice(),
                 );
             }
         }
+        self::_sessionAdd();
     }
 
     /**
@@ -48,9 +58,10 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function remove($itemId)
     {
-        if (isset($this->_items[$itemId])) {
-            unset ($this->_items[$itemId]);
+        if (isset(self::$_items[(int)$itemId])) {
+            unset (self::$_items[(int)$itemId]);
         }
+        self::_sessionAdd();
     }
 
     /**
@@ -62,14 +73,15 @@ class ECommerce_Cart implements ECommerce_ICart
     public function update($item, $count)
     {
         if ($item instanceof ECommerce_Interface) {
-            if (isset($this->_items[(int)$item->getId()])) {
-                $this->_items[(int)$item->getId()] = array(
+            if (isset(self::$_items[(int)$item->getId()])) {
+                self::$_items[(int)$item->getId()] = array(
                     'item' => $item,
-                    'count' => $count,
+                    'count' => (int)$count,
                     'price' => $item->getPrice(),
                 );
             }
         }
+        self::_sessionAdd();
     }
 
     /**
@@ -78,7 +90,10 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function clearAll()
     {
-        unset ($this->_items);
+        if (!empty(self::$_items)) {
+            self::$_items = null;
+        }
+        self::_sessionClear();
     }
 
     /**
@@ -88,7 +103,7 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function isEmpty()
     {
-        if (!isset($this->_items) || empty($this->_items)) {
+        if (!isset(self::$_items) || empty(self::$_items)) {
             return true;
         }
     }
@@ -101,7 +116,7 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function isItem($itemId)
     {
-        if (isset($this->_items[$itemId])) {
+        if (isset(self::$_items[(int)$itemId])) {
             return true;
         }
     }
@@ -114,8 +129,8 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getItemCount($itemId)
     {
-       if (isset($this->_items[$itemId])) {
-           return $this->_items[$itemId]['count'];
+       if (isset(self::$_items[(int)$itemId])) {
+           return self::$_items[(int)$itemId]['count'];
        }
     }
 
@@ -128,7 +143,7 @@ class ECommerce_Cart implements ECommerce_ICart
     public function getItemsCount()
     {
         $count = 0;
-        foreach ($this->_items as $key) {
+        foreach (self::$_items as $key) {
             $count += $key['count'];
         }
         return $count;
@@ -142,7 +157,7 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getCount()
     {
-       return count($this->_items);
+       return count(self::$_items);
     }
 
     /**
@@ -154,21 +169,20 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getPrice($itemId)
     {
-       if (isset($this->_items[$itemId])) {
-           return $this->_items[$itemId]['price'];
+       if (isset(self::$_items[(int)$itemId])) {
+           return self::$_items[(int)$itemId]['price'];
        }
     }
 
     /**
      * Возвращает сумму всей корзины
      *
-     *
      * @return int
      */
     public function getAllCost()
     {
         $cost = 0;
-        foreach ($this->_items as $key) {
+        foreach (self::$_items as $key) {
             $cost += $key['price'] * $key['count'];
         }
         return $cost;
@@ -181,8 +195,8 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getItem($itemId)
     {
-        if (isset($this->_items[$itemId])) {
-            return $this->_items[$itemId];
+        if (isset(self::$_items[(int)$itemId])) {
+            return self::$_items[(int)$itemId];
         }
     }
 
@@ -193,9 +207,48 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getItems()
     {
-        if (!empty($this->_items)) {
-            return $this->_items;
+        if (!empty(self::$_items)) {
+            return self::$_items;
         }
     }
 
+    /**
+     * Добавляет в регистр массив
+     * объектов корзины
+     *
+     * @static
+     *
+     */
+    static private function _sessionAdd()
+    {
+        $cartSession = new Zend_Session_Namespace('Cart');
+        $cartSession->_items = self::$_items;
+    }
+
+    /**
+     * Очищает сессию от данных
+     *
+     * @static
+     *
+     */
+    static private function _sessionClear()
+    {
+        $cartSession = new Zend_Session_Namespace('Cart');
+        $cartSession->unsetAll();
+    }
+
+    /**
+     * Восстанавливает из регистра
+     * массив объектов корзины
+     *
+     * @static
+     *
+     */
+    static private function _sessionRestore()
+    {
+        $cartSession = new Zend_Session_Namespace('Cart');
+        if (isset($cartSession->_items)) {
+            self::$_items = $cartSession->_items;
+        }
+    }
 }
