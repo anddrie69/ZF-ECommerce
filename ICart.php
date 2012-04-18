@@ -51,13 +51,22 @@ interface ECommerce_ICart
      * Проверка, есть ли в корзине объект
      *
      * @abstract
-     * @param $item
+     * @param $itemId
      */
-    public function isItem($item);
+    public function isItem($itemId);
 
     /**
      * Возвращает все позиции в корзине
      * (товар * количество)
+     *
+     * @abstract
+     * @param $itemId
+     */
+    public function getItemCount($itemId);
+
+    /**
+     * Возвращает количество позиций во всей
+     * корзине для всех объектов
      *
      * @abstract
      *
@@ -77,9 +86,10 @@ interface ECommerce_ICart
      * Возвращает цену товара $item
      *
      * @abstract
-     * @param $item
+     * @param $itemId
+     * @internal param $item
      */
-    public function getPrice($item);
+    public function getPrice($itemId);
 
     /**
      * Возвращает сумму всей корзины

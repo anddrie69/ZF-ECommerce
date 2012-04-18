@@ -35,6 +35,7 @@ class ECommerce_Cart implements ECommerce_ICart
                $this->_items[(int)$item->getId()] = array(
                     'item' => $item,
                     'count' => $count,
+                    'price' => $item->getPrice(),
                 );
             }
         }
@@ -65,6 +66,7 @@ class ECommerce_Cart implements ECommerce_ICart
                 $this->_items[(int)$item->getId()] = array(
                     'item' => $item,
                     'count' => $count,
+                    'price' => $item->getPrice(),
                 );
             }
         }
@@ -76,69 +78,100 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function clearAll()
     {
-        // TODO: Implement clearAll() method.
+        unset ($this->_items);
     }
 
     /**
      * Возвращает true если корзина пустая
      *
-     *
+     * @return bool
      */
     public function isEmpty()
     {
-        // TODO: Implement isEmpty() method.
+        if (!isset($this->_items) || empty($this->_items)) {
+            return true;
+        }
     }
 
     /**
-     * Проверка, есть ли в корзине объект
+     * Возвращает true, если в корине есть объект
      *
-     * @param $item
+     * @param $itemId
+     * @return bool
      */
-    public function isItem($item)
+    public function isItem($itemId)
     {
-        // TODO: Implement isItem() method.
+        if (isset($this->_items[$itemId])) {
+            return true;
+        }
     }
 
     /**
-     * Возвращает все позиции в корзине
+     * Возвращает количество позиций в объекте
      * (товар * количество)
      *
+     * @param $itemId
+     */
+    public function getItemCount($itemId)
+    {
+       if (isset($this->_items[$itemId])) {
+           return $this->_items[$itemId]['count'];
+       }
+    }
+
+    /**
+     * Возвращает количество позиций во всей
+     * корзине для всех объектов
      *
+     * @return int
      */
     public function getItemsCount()
     {
-        // TODO: Implement getItemsCount() method.
+        $count = 0;
+        foreach ($this->_items as $key) {
+            $count += $key['count'];
+        }
+        return $count;
     }
 
     /**
      * Возвращает количество элементов
      * в корзине
      *
-     *
+     * @return int
      */
     public function getCount()
     {
-        // TODO: Implement getCount() method.
+       return count($this->_items);
     }
 
     /**
      * Возвращает цену товара $item
      *
-     * @param $item
+     * @param $itemId
+     * @internal param $item
+     * @return mixed
      */
-    public function getPrice($item)
+    public function getPrice($itemId)
     {
-        // TODO: Implement getPrice() method.
+       if (isset($this->_items[$itemId])) {
+           return $this->_items[$itemId]['price'];
+       }
     }
 
     /**
      * Возвращает сумму всей корзины
      *
      *
+     * @return int
      */
     public function getAllCost()
     {
-        // TODO: Implement getAllCost() method.
+        $cost = 0;
+        foreach ($this->_items as $key) {
+            $cost += $key['price'] * $key['count'];
+        }
+        return $cost;
     }
 
     /**
@@ -164,4 +197,5 @@ class ECommerce_Cart implements ECommerce_ICart
             return $this->_items;
         }
     }
+
 }
