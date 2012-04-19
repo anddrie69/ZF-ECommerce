@@ -4,7 +4,7 @@
  * Date: 17.04.12
  * Time: 13:57
  */
-class ECommerce_Cart implements ECommerce_ICart
+class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
 {
     /**
      * Массив всех объектов из корзины
@@ -248,5 +248,26 @@ class ECommerce_Cart implements ECommerce_ICart
         if (isset($cartSession->_items)) {
             self::$_items = $cartSession->_items;
         }
+    }
+
+    /**
+     * Метод применяет скидку для товара(-ов)
+     *
+     * @param null $itemId
+     */
+    public function setDiscount($itemId = null)
+    {
+        // TODO: Implement setDiscount() method.
+    }
+
+    /**
+     * В методе описывается реализация скидки
+     * для товаров(-а)
+     *
+     *
+     */
+    public function discount()
+    {
+        // TODO: Implement discount() method.
     }
 }
