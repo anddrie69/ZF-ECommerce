@@ -7,20 +7,19 @@
 interface ECommerce_IDiscount
 {
     /**
+     * Задает скидку в процентах
+     *
+     * @abstract
+     * @param $discountPercent
+     * @internal param $percent
+     */
+    public function setDiscount($discountPercent);
+
+    /**
      * Метод применяет скидку для товара(-ов)
      *
      * @abstract
      * @param null $itemId
      */
-    public function setDiscount($itemId = null);
-
-    /**
-     * В методе описывается реализация скидки
-     * для товаров(-а)
-     *
-     * @abstract
-     *
-     */
-    public function discount();
-
+    public function getDiscount($itemId = null);
 }

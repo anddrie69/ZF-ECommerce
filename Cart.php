@@ -12,6 +12,12 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
      * @var array
      */
     static private $_items = array();
+    /**
+     * Скидка в процентах от стоимости
+     *
+     * @var null
+     */
+    private $_discount = null;
 
     /**
      * @var null
@@ -90,7 +96,9 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
      */
     public function clearAll()
     {
-        unset (self::$_items);
+        if (!empty(self::$_items)) {
+            self::$_items = null;
+        }
         self::_sessionClear();
     }
 
@@ -211,6 +219,59 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
     }
 
     /**
+     * Задает скидку в процентах
+     *
+     * @param $discountPercent
+     * @internal param $percent
+     */
+    public function setDiscount($discountPercent)
+    {
+        $this->_discount = $discountPercent;
+    }
+
+    /**
+     * Метод применяет скидку для товара(-ов)
+     *
+     * @param null $itemId
+     */
+    public function getDiscount($itemId = null)
+    {
+        if (null === $itemId) {
+            foreach (self::$_items as $key) {
+                self::$_items[$key['item']->getId()]['price']
+                    -= $this->_discount($key['price']);
+            }
+        }
+        else {
+            self::$_items[$itemId]['price']
+                -= $this->_discount(self::$_items[$itemId]['price']);
+        }
+    }
+
+    /**
+     * В методе описывается реализация скидки
+     * для товаров(-а)
+     *
+     * @param $price
+     * @return float
+     */
+    protected function _discount($price)
+    {
+        if (isset($this->_discount)) {
+            /* Скидка в процентах от стоимости товара */
+            return $price / 100 * $this->_discount;
+        }
+        else {
+            /*
+             * Это свободная реализация системы скидок.
+             * Перегрузите метод или задайте собственный
+             * алгоритм вычисления скидки для товара
+             */
+            return $price / 100 * 1;
+        }
+    }
+
+    /**
      * Добавляет в регистр массив
      * объектов корзины
      *
@@ -248,26 +309,5 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
         if (isset($cartSession->_items)) {
             self::$_items = $cartSession->_items;
         }
-    }
-
-    /**
-     * Метод применяет скидку для товара(-ов)
-     *
-     * @param null $itemId
-     */
-    public function setDiscount($itemId = null)
-    {
-        // TODO: Implement setDiscount() method.
-    }
-
-    /**
-     * В методе описывается реализация скидки
-     * для товаров(-а)
-     *
-     *
-     */
-    public function discount()
-    {
-        // TODO: Implement discount() method.
     }
 }
