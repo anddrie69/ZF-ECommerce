@@ -14,6 +14,8 @@ class ECommerce_Cart implements ECommerce_ICart
     static private $_items = array();
 
     /**
+     * Экзепляр класса Cart
+     *
      * @var null
      */
     static private $_instance = null;
