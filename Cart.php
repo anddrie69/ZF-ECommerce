@@ -4,7 +4,7 @@
  * Date: 17.04.12
  * Time: 13:57
  */
-class ECommerce_Cart implements ECommerce_ICart
+class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
 {
     /**
      * Массив всех объектов из корзины
@@ -12,10 +12,14 @@ class ECommerce_Cart implements ECommerce_ICart
      * @var array
      */
     static private $_items = array();
+    /**
+     * Скидка в процентах от стоимости
+     *
+     * @var null
+     */
+    private $_discount = null;
 
     /**
-     * Экзепляр класса Cart
-     *
      * @var null
      */
     static private $_instance = null;
@@ -43,7 +47,7 @@ class ECommerce_Cart implements ECommerce_ICart
     {
         if ($item instanceof ECommerce_Interface) {
             if (!isset(self::$_items[(int)$item->getId()])) {
-               self::$_items[(int)$item->getId()] = array(
+                self::$_items[(int)$item->getId()] = array(
                     'item' => $item,
                     'count' => (int)$count,
                     'price' => $item->getPrice(),
@@ -131,9 +135,9 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getItemCount($itemId)
     {
-       if (isset(self::$_items[(int)$itemId])) {
-           return self::$_items[(int)$itemId]['count'];
-       }
+        if (isset(self::$_items[(int)$itemId])) {
+            return self::$_items[(int)$itemId]['count'];
+        }
     }
 
     /**
@@ -159,7 +163,7 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getCount()
     {
-       return count(self::$_items);
+        return count(self::$_items);
     }
 
     /**
@@ -171,9 +175,9 @@ class ECommerce_Cart implements ECommerce_ICart
      */
     public function getPrice($itemId)
     {
-       if (isset(self::$_items[(int)$itemId])) {
-           return self::$_items[(int)$itemId]['price'];
-       }
+        if (isset(self::$_items[(int)$itemId])) {
+            return self::$_items[(int)$itemId]['price'];
+        }
     }
 
     /**
@@ -211,6 +215,59 @@ class ECommerce_Cart implements ECommerce_ICart
     {
         if (!empty(self::$_items)) {
             return self::$_items;
+        }
+    }
+
+    /**
+     * Задает скидку в процентах
+     *
+     * @param $discountPercent
+     * @internal param $percent
+     */
+    public function setDiscount($discountPercent)
+    {
+        $this->_discount = $discountPercent;
+    }
+
+    /**
+     * Метод применяет скидку для товара(-ов)
+     *
+     * @param null $itemId
+     */
+    public function getDiscount($itemId = null)
+    {
+        if (null === $itemId) {
+            foreach (self::$_items as $key) {
+                self::$_items[$key['item']->getId()]['price']
+                    -= $this->_discount($key['price']);
+            }
+        }
+        else {
+            self::$_items[$itemId]['price']
+                -= $this->_discount(self::$_items[$itemId]['price']);
+        }
+    }
+
+    /**
+     * В методе описывается реализация скидки
+     * для товаров(-а)
+     *
+     * @param $price
+     * @return float
+     */
+    protected function _discount($price)
+    {
+        if (isset($this->_discount)) {
+            /* Скидка в процентах от стоимости товара */
+            return $price / 100 * $this->_discount;
+        }
+        else {
+            /*
+             * Это свободная реализация системы скидок.
+             * Перегрузите метод или задайте собственный
+             * алгоритм вычисления скидки для товара
+             */
+            return $price / 100 * 1;
         }
     }
 
