@@ -13,7 +13,7 @@ interface ECommerce_ICart
      * @param $item
      * @param $count
      */
-    public function add($item, $count);
+    public function add($item, $count = 1);
 
     /**
      * Удаляет позицию из корзины
