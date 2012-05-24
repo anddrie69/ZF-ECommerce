@@ -85,9 +85,24 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
                     'count' => (int)$count,
                     'price' => $item->getPrice(),
                 );
+                self::_sessionAdd();
             }
         }
-        self::_sessionAdd();
+    }
+
+    /**
+     * Обновляет количество для определеной
+     * позиции в корзине
+     *
+     * @param $itemId
+     * @param $count
+     */
+    public function updateCount($itemId, $count)
+    {
+        if (isset(self::$_items[(int)$itemId])) {
+            self::$_items[(int)$itemId]['count'] =(int)$count;
+            self::_sessionAdd();
+        }
     }
 
     /**

@@ -33,6 +33,17 @@ interface ECommerce_ICart
     public function update($item, $count);
 
     /**
+     * Обновляет количество для определеной
+     * позиции в корзине
+     *
+     * @abstract
+     * @param $itemId
+     * @param $count
+     * @return mixed
+     */
+    public function updateCount($itemId, $count);
+
+    /**
      * Очищает корзину полностью
      *
      * @abstract
