@@ -12,6 +12,9 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
      * @var array
      */
     static private $_items = array();
+
+    static protected $_adapter;
+
     /**
      * Скидка в процентах от стоимости
      *
@@ -28,12 +31,21 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
 
     public function __clone(){}
 
-    static  function getInstance()
+    static  function getInstance($adapter = null)
     {
         if (null == self::$_instance) {
             self::$_instance = new ECommerce_Cart();
         }
-        self::_sessionRestore();
+
+        if ($adapter instanceof ECommerce_Adapter_Interface &&
+                null !== $adapter) {
+            self::$_adapter = $adapter;
+        }
+
+        self::$_items =  self::$_adapter->restore();
+
+
+        //self::_sessionRestore();
         return self::$_instance;
     }
 
@@ -54,7 +66,7 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
                 );
             }
         }
-        self::_sessionAdd();
+        self::$_adapter->add(self::$_items);
     }
 
     /**
@@ -67,7 +79,7 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
         if (isset(self::$_items[(int)$itemId])) {
             unset (self::$_items[(int)$itemId]);
         }
-        self::_sessionAdd();
+        self::$_adapter->add(self::$_items);
     }
 
     /**
@@ -85,7 +97,7 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
                     'count' => (int)$count,
                     'price' => $item->getPrice(),
                 );
-                self::_sessionAdd();
+                self::$_adapter->add(self::$_items);
             }
         }
     }
@@ -101,7 +113,7 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
     {
         if (isset(self::$_items[(int)$itemId])) {
             self::$_items[(int)$itemId]['count'] =(int)$count;
-            self::_sessionAdd();
+            self::$_adapter->add(self::$_items);
         }
     }
 
@@ -114,7 +126,7 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
         if (!empty(self::$_items)) {
             self::$_items = null;
         }
-        self::_sessionClear();
+        self::$_adapter->clear();
     }
 
     /**
@@ -283,46 +295,6 @@ class ECommerce_Cart implements ECommerce_ICart, ECommerce_IDiscount
              * алгоритм вычисления скидки для товара
              */
             return $price / 100 * 1;
-        }
-    }
-
-    /**
-     * Добавляет в регистр массив
-     * объектов корзины
-     *
-     * @static
-     *
-     */
-    static private function _sessionAdd()
-    {
-        $cartSession = new Zend_Session_Namespace('Cart');
-        $cartSession->_items = self::$_items;
-    }
-
-    /**
-     * Очищает сессию от данных
-     *
-     * @static
-     *
-     */
-    static private function _sessionClear()
-    {
-        $cartSession = new Zend_Session_Namespace('Cart');
-        $cartSession->unsetAll();
-    }
-
-    /**
-     * Восстанавливает из регистра
-     * массив объектов корзины
-     *
-     * @static
-     *
-     */
-    static private function _sessionRestore()
-    {
-        $cartSession = new Zend_Session_Namespace('Cart');
-        if (isset($cartSession->_items)) {
-            self::$_items = $cartSession->_items;
         }
     }
 }
